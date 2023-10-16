@@ -134,7 +134,7 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
 
 
 # データ処理が結構重いが，読み込みに1分強かかっていた．
-# よって，保存せずに毎回計算する．
+# よって，保存せずに毎回計算する．           
 
 
 # 営業日のリスト
