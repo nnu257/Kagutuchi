@@ -52,14 +52,13 @@ nano mail-pass.txt
 <同じく登録したパスワード>
 ```
 5. J-Quantsから銘柄コードをダウンロード
-   1. request.pyの変数"get_Token"をTrueに変更
-   2. 同じく変数"get_code"をTrueに変更
-   3. request.pyを実行
-   4. info2code.pyの変数をWHENを，3で作成された，datas/code/内のファイル名の数字部分に変更
-   5. info2code.pyを実行
+   1. request.pyの変数"get_Code"をTrueに変更
+   2. request.pyを実行
+   3. info2code.pyの変数をWHENを，2で作成された，datas/code/内のファイル名の数字部分に変更
+   4. info2code.pyを実行
 6. J-Quantsから株価をダウンロード
-   1. request.pyの変数"get_code"をFalseに変更
-   2. 同じく変数"get_price"をTrueに変更
+   1. request.pyの変数"get_Code"をFalseに変更
+   2. 同じく変数"get_Price"をTrueに変更
    3. request.pyを実行
    4. summary_price.pyを実行
 7. 売買ルールを検証

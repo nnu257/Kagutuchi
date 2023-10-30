@@ -168,6 +168,7 @@ def decide_buy_code(today:datetime.date) -> list:
 
         # 今日と昨日のレコード，i-1としているが，
         # main関数でtodayは+30して始まっているので，out indexにはならない
+        dbyesterday_record = code_price[today_index-2]
         yesterday_record = code_price[today_index-1]
         today_record = code_price[today_index]
 
@@ -175,29 +176,29 @@ def decide_buy_code(today:datetime.date) -> list:
         # 平均売買代金が5千万円以上
         # さらに，株価が1万円以下
         judge_buy = False
-        if today_record[17] > 50000000:
-            if today_record[6] <= 10000:
+        if yesterday_record[17] > 50000000:
+            if yesterday_record[6] <= 10000:
                    
                 # (1)さらに，MACDがシグナルを突き抜けた(record[20] > record[21]) or MACDが0を上回った(record[20]>0)
-                # (1)さらに，RSIが40以下
-                if (yesterday_record[20] < yesterday_record[21] and today_record[20] > yesterday_record[21]) or (yesterday_record[20] < 0 and today_record[20] > 0):
-                    if today_record[23] <= 50:
+                # (1)さらに，RSIが50以下
+                if (dbyesterday_record[20] < dbyesterday_record[21] and yesterday_record[20] > yesterday_record[21]) or (dbyesterday_record[20] < 0 and yesterday_record[20] > 0):
+                    if yesterday_record[23] <= 50:
                         judge_buy = True
                         
                 # (2)さらに，株価が移動平均線25日の上から漸近した = 移動平均乖離率25(record[27])の下降が2%~20%，当日が0~20%
-                deviation_down = yesterday_record[27] - today_record[27]
-                deviation_today = today_record[27]
-                if deviation_today >= 3 and deviation_today < 20 and deviation_down > 2 and deviation_down < 7:
+                deviation_down = dbyesterday_record[27] - yesterday_record[27]
+                deviation_yesterday = yesterday_record[27]
+                if deviation_yesterday >= 3 and deviation_yesterday < 20 and deviation_down > 2 and deviation_down < 7:
                     #judge_buy = True
                     pass
                         
         if judge_buy:                
-            trade_buy_candidates.append([today_record[1], today_record[2], today_record[6], today_record[17], today_record[15]])
+            trade_buy_candidates.append([today_record[1], today_record[2], today_record[3], today_record[17]])
     
     trade_buy_candidates.sort(key=lambda x:x[3], reverse=True)
     
     # trade_buy_candidatesの例
-    # [['2021-08-16', 14190, 2370.0, 3923232400.0, price], ['2021-08-16', 14140, 4840.0, 660690650.0, price]]
+    # [['2021-08-16', 14190, 2370.0, 3923232400.0], ['2021-08-16', 14140, 4840.0, 660690650.0]]
     
     return trade_buy_candidates
     
