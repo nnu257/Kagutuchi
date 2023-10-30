@@ -16,7 +16,7 @@ from collections import defaultdict
 import mylib_stock
 
 
-# データパスと変数の用意
+# データパス
 DATA_PATH_PRICE = "datas/price_summary.csv"
 DATA_PATH_CODE = "datas/code/20231008205049.tsv"
 DATA_PATH_CLACULATED = "datas/backtest/calculated_price_summary.joblib"
@@ -24,10 +24,16 @@ DATA_PATH_TRADE_LOG = "datas/backtest/trade_log.txt"
 DATA_PATH_ASSET_LOG = "datas/backtest/asset_log.txt"
 DATA_PATH_ASSET_IMG= "datas/backtest/asset_log.png"
 
+# 検証開始/終了の日付
 FROM = date(2021, 7, 16)
 TO = date(2023, 7, 14)
 
+# 初期所持金額
 FIRST_MONEY = 3000000.0
+
+# 利確・損切の基準(%ベースで絶対値, しない場合は100000のように入力)
+SECURE_PROFIT = 20
+LOSS_CUT = 15
 
 
 # 型変換のための関数
@@ -242,7 +248,7 @@ def trade_buy_day(today:datetime.date, trade_buy_candidates:list, tmp_money:floa
         f_tra.write(f"buy：{', '.join(log)}\n")
         
         # return用の株価保持リスト
-        stocks.append([code, buy_num])
+        stocks.append([code, buy_num, price])
 
     return tmp_money, stocks
 
@@ -260,7 +266,8 @@ def trade_sell_day(today:datetime.date, stocks:dict, tmp_money:float) -> [float,
     for stock in stock_items:
         code = stock[0]
         # 条件に合致したら全て売却する
-        sell_num = stock[1]
+        sell_num = stock[1][0]
+        average_price = stock[1][1]
         
         # prces_normalからcodeでrecordsを特定    
         code_index = codes_normal.index(code)  
@@ -281,9 +288,30 @@ def trade_sell_day(today:datetime.date, stocks:dict, tmp_money:float) -> [float,
         today_record = prices_normal[code_index][today_index]
         price = today_record[6]
         
+        # 売却判断用フラグ
+        judge_sell = False
+        
         # MACDのデッドクロスorMACDが0を下回ったか確認
         # MACD = record[20], シグ = record[21]
         if (yesterday_record[20] > yesterday_record[21] and today_record[20] < yesterday_record[21]) or (yesterday_record[20] > 0 and today_record[20] < 0):
+            judge_sell = True
+        
+        # 利確．昨日の終値が取得平均単価よりSECURE_PROFIT%上回ったら，その価格で利確(指値注文をしておくものとする)
+        fixed_price_p = average_price * (100+SECURE_PROFIT)*0.01
+        if yesterday_record[6] > fixed_price_p:
+            judge_sell = True
+            
+            # priceを上書きする．つまり，この判断はMACDの判断よりも優先される
+            price = fixed_price_p
+        
+        # 損切はLOSS_CUT%で計算
+        fixed_price_l = average_price * (100-LOSS_CUT)*0.01
+        if yesterday_record[6] < fixed_price_l:
+            judge_sell = True
+            price = fixed_price_l
+        
+        # 当該コードが売却フラグを満たしていたら売却    
+        if judge_sell:
             
             # 条件に合致したら売るリストに追加
             sell_list.append(code)
@@ -311,7 +339,7 @@ def calculate_asset(today:datetime.date, money:float, stocks:dict):
     # すべて売った時の所持金を計算
     for stock in stock_items:
         code = stock[0]
-        sell_num = stock[1]
+        sell_num = stock[1][0]
         
         # prices_normalからcodeでrecordsを特定    
         code_index = codes_normal.index(code)  
@@ -319,7 +347,7 @@ def calculate_asset(today:datetime.date, money:float, stocks:dict):
         # 今日のレコードから代金を取得
         for record in prices_normal[code_index]:   
             if record[1] == today:
-                price = record[15]
+                price = record[6]
                 break
             
         # 所持金の追加
@@ -329,13 +357,17 @@ def calculate_asset(today:datetime.date, money:float, stocks:dict):
     log = [today, str(tmp_money)]
     f_ase.write(f"{', '.join(log)}\n")
         
+# defualtdict初期化のための関数
+def init():
+    return [0, 0]
+
 
 # 1日ずつ，取引を行う．移動平均などがあるので，30日ずらす
 today = FROM + timedelta(days=30)
 # 手持ち代金
 money = FIRST_MONEY
 # 手持ち株
-stocks = defaultdict(int)
+stocks = defaultdict(init)
 # ログファイル
 f_tra = open(DATA_PATH_TRADE_LOG, "w")
 f_ase = open(DATA_PATH_ASSET_LOG, "w")
@@ -357,7 +389,6 @@ while today != TO:
         money =  mon
         # 辞書のやつを減らす
         for code in sell_list:
-            stocks[code] = 0
             del stocks[code]
         
         # 購入フロー
@@ -376,10 +407,30 @@ while today != TO:
             # 複数の株を買った時はfor文
             if type(sto[0]) is list:
                 for x in sto:
-                    stocks[x[0]] += x[1]
+                    
+                    # 今までの持分と合算して取得単価を計算
+                    have_num = stocks[x[0]][0]
+                    have_price = stocks[x[0]][1]
+                    add_num = x[1]
+                    add_price = x[2]
+                    average_price = (have_num*have_price + add_num*add_price) / (have_num+add_num)
+                    
+                    # 取得単価を更新
+                    stocks[x[0]][1] = average_price
+                    # 持株数を更新
+                    stocks[x[0]][0] += x[1]
+                    
             # 一つだけの時は一つ
             elif type(sto[0]) is str:
-                stocks[sto[0]] += sto[1]
+                
+                have_num = stocks[x[0]][0]
+                have_price = stocks[x[0]][1]
+                add_num = sto[1]
+                add_price = sto[2]
+                average_price = (have_num*have_price + add_num*add_price) / (have_num+add_num)
+                
+                stocks[sto[0]][1] = average_price
+                stocks[sto[0]][0] += sto[1]
             else:
                 pass
         else:
