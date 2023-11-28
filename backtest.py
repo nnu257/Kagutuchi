@@ -1,5 +1,3 @@
-bugged
-
 from tqdm import tqdm
 
 from datetime import date, timedelta
