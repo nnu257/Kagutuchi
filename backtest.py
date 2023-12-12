@@ -92,6 +92,9 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
     # 調整済み終値
     adj_clo_prices = [x[15] for x in prices_normal[i]]
     
+    # 調整済み始値
+    adj_ope_prices = [x[12] for x in prices_normal[i]]
+    
     # 売買代金(調整されてないっぽい)
     adj_volume = [x[10] for x in prices_normal[i]]
     
@@ -130,13 +133,26 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
         momentum_rate_10 = mylib_stock.calculate_momentum_rate(adj_clo_prices, 10)
         momentum_rate_20 = mylib_stock.calculate_momentum_rate(adj_clo_prices, 20)
         
+        # 終値の階差割合
+        close_diff_rate1 = mylib_stock.calculate_close_diff_rate(adj_clo_prices, 1)
+        close_diff_rate5 = mylib_stock.calculate_close_diff_rate(adj_clo_prices, 5)
+        close_diff_rate25 = mylib_stock.calculate_close_diff_rate(adj_clo_prices, 25)
+        
+        # ボラティリティ
+        volatility5 = mylib_stock.calculate_volatility(adj_clo_prices, 5)
+        volatility25 = mylib_stock.calculate_volatility(adj_clo_prices, 25)
+        volatility60 = mylib_stock.calculate_volatility(adj_clo_prices, 60)
+        
+        # 1日リターン{(close/open)-1.0}
+        ret1 = mylib_stock.calculate_return(adj_clo_prices, adj_ope_prices)
+        
     else:
         # 26日分作っておけばlist index out of rangeにはならない
-        movingvolume_10, movinglines_5, movinglines_25, macd, signal, rsi_9, rsi_14, rsi_22, psychological, movingline_deviation_5, movingline_deviation_25, bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3, FastK, FastD, SlowK, SlowD, momentum_rate_10, momentum_rate_20 = [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26
+        movingvolume_10, movinglines_5, movinglines_25, macd, signal, rsi_9, rsi_14, rsi_22, psychological, movingline_deviation_5, movingline_deviation_25, bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3, FastK, FastD, SlowK, SlowD, momentum_rate_10, momentum_rate_20, close_diff_rate1, close_diff_rate5, close_diff_rate25, volatility5, volatility25, volatility60, ret1 = [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26
     
     # 指標をリストに追加
     for j, day_price in enumerate(prices_normal[i]):
-        prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j]])
+        prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j], close_diff_rate1[j], close_diff_rate5[j], close_diff_rate25[j], volatility5[j], volatility25[j], volatility60[j], ret1[j]])
 
 
 # データ処理が結構重いが，読み込みに1分強かかっていた．

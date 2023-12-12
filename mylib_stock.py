@@ -166,3 +166,30 @@ def calculate_momentum_rate(prices:list, n=int) -> list:
         momentum_rate.append(prices[i]/prices[i-n]*100)
     
     return momentum_rate
+
+# 与えられたリストから終値の階差を比率ベースで計算
+def calculate_close_diff_rate(prices:list, n=int) -> list:
+    
+    pd_prices = pd.Series(prices)
+    close_diff_rate = pd_prices.pct_change(n).fillna(0)
+    
+    return close_diff_rate
+
+# 与えられたリストからボラティリティを計算
+def calculate_volatility(prices:list, n=int) -> list:
+    
+    pd_prices = pd.Series(prices)
+    volatility = np.log(pd_prices).diff().rolling(n).std().fillna(0)
+    
+    return volatility
+
+# 与えられたリストから1日リターン(close/open)-1.0を計算
+def calculate_return(closes:list, opens=list) -> list:
+    
+    pd_close = pd.Series(closes)
+    pd_open = pd.Series(opens)
+    
+    ret1 = (pd_close / pd_open) - 1.0
+    ret1 = ret1.shift(-1).fillna(0)
+    
+    return ret1
