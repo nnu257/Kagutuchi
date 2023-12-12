@@ -13,6 +13,8 @@ import japanize_matplotlib
 import sys
 from collections import defaultdict
 
+import joblib
+
 import mylib_stock
 
 
@@ -156,7 +158,12 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
 
 
 # データ処理が結構重いが，読み込みに1分強かかっていた．
-# よって，保存せずに毎回計算する．           
+# よって，保存せずに毎回計算する．
+
+# Vicugnaのために，書き出しが可能になるようにする(フラグ管理)
+WRITE = True
+if WRITE:
+    joblib.dump(prices_normal, 'prices_normal.pkl')
 
 
 # 営業日のリスト
