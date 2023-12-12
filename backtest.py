@@ -161,9 +161,9 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
 # よって，保存せずに毎回計算する．
 
 # Vicugnaのために，書き出しが可能になるようにする(フラグ管理)
-WRITE = True
+WRITE = False
 if WRITE:
-    joblib.dump(prices_normal, 'prices_normal.pkl')
+    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/プログラミング/AI/Vicugna/prices_normal.job')
 
 
 # 営業日のリスト
