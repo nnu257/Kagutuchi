@@ -163,8 +163,11 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
 # Vicugnaのために，書き出しが可能になるようにする(フラグ管理)
 WRITE = False
 if WRITE:
-    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/プログラミング/AI/Vicugna/prices_normal.job')
+    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/プログラミング/AI/Vicugna/etc/prices_normal.job')
 
+WRITE_SAMPLE = True
+if WRITE_SAMPLE:
+    joblib.dump(prices_normal[200:250], '/Users/yuta/Desktop/nnu/プログラミング/AI/Vicugna/etc/prices_normal_sample.job')
 
 # 営業日のリスト
 biz_days = [record[1] for record in prices_normal[0]]

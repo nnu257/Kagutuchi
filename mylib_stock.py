@@ -144,11 +144,11 @@ def calculate_psychological(prices:list, n=12) -> list:
     # 12日から，サイコロジカルラインを計算
     for i in range(n, len(prices)+1):
         
-        # 12日分の差を取得
-        tmp = deltas[i-n:i]
+        # 11日分の差を取得
+        tmp = deltas[i-n:i-1]
         
         # 値上がりした日数/nがサイコロジカル
-        psychological.append(len(tmp[tmp > 0])/n)
+        psychological.append(len(tmp[tmp > 0])/(n-1))
     
     return psychological
 
