@@ -38,8 +38,8 @@ SECURE_PROFIT = 20
 LOSS_CUT = 15
 
 # 書き出しと途中終了のためのフラグ
-WRITE = True
-WRITE_SAMPLE = True
+WRITE = False
+WRITE_SAMPLE = False
 INTERRUPT = True
 
 # 型変換のための関数
@@ -91,7 +91,7 @@ prices_normal = [price_normal for i, price_normal in enumerate(prices_normal) if
 for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
     prices_normal[i] = [[change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]
 
-# Vicugna用に，最新30日分を保存しておく
+# Vicugnaの運用データ用に，最新30日分を保存しておく
 prices_normal_not_indices_30 = [prices_normal[i][-30:] if len(prices_normal[i])>=30 else prices_normal[i] for i in range(len(prices_normal))]
 joblib.dump(prices_normal_not_indices_30, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_not_indices_30.job')
     
@@ -103,7 +103,7 @@ prices_normal = mylib_stock.calculate_indices(codes_normal, prices_normal)
 # データ処理が結構重いが，読み込みに1分強かかっていた．
 # よって，保存せずに毎回計算する．
 
-# Vicugnaのために，書き出しが可能になるようにする(フラグ管理)
+# Vicugnaの学習用データのために，書き出しが可能になるようにする(フラグ管理)
 if WRITE:
     joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal.job')
 if WRITE_SAMPLE:

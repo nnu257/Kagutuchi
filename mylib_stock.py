@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import bottleneck as bn
 import math
-import tqdm
+from tqdm import tqdm
 
 import sys
 
