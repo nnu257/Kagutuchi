@@ -91,74 +91,13 @@ prices_normal = [price_normal for i, price_normal in enumerate(prices_normal) if
 for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
     prices_normal[i] = [[change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]
 
+# Vicugna用に，最新30日分を保存しておく
+prices_normal_not_indices_30 = [prices_normal[i][-30:] if len(prices_normal[i])>=30 else prices_normal[i] for i in range(prices_normal)]
+joblib.dump(prices_normal_not_indices_30, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_not_indices_30.job')
+    
 
-# pdに対して，取引のルール判断に必要な数値を計算する
-for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
-    
-    # 調整済み終値
-    adj_clo_prices = [x[15] for x in prices_normal[i]]
-    
-    # 調整済み始値
-    adj_ope_prices = [x[12] for x in prices_normal[i]]
-    
-    # 売買代金(調整されてないっぽい)
-    adj_volume = [x[10] for x in prices_normal[i]]
-    
-    # 出来立てで26日ない時は，0のリストを用意，これがmacdのルールに引っかかることはないはず
-    if len(adj_clo_prices) >= 26:
-        
-        # 売買代金の10日移動平均
-        movingvolume_10 = bn.move_mean(np.array(adj_volume), window=10).tolist()
-        
-        # 移動平均5，25
-        movingline_5 = bn.move_mean(np.array(adj_clo_prices), window=5).tolist()
-        movingline_25 = bn.move_mean(np.array(adj_clo_prices), window=25).tolist()
-        
-        # MACD, シグナル
-        macd, signal = mylib_stock.calculate_macds(adj_clo_prices)
-                
-        # 9, 14, 22日RSI
-        rsi_9 = mylib_stock.calculate_rsi(adj_clo_prices, n=9)
-        rsi_14 = mylib_stock.calculate_rsi(adj_clo_prices, n=14)
-        rsi_22 = mylib_stock.calculate_rsi(adj_clo_prices, n=22)
-        
-        # 移動平均乖離率
-        movingline_deviation_5 = mylib_stock.calculate_movingline_deviation(adj_clo_prices, movingline_5)
-        movingline_deviation_25 = mylib_stock.calculate_movingline_deviation(adj_clo_prices, movingline_25)
-        
-        # ボリンジャーバンド +1~3, -1~3, *25日移動平均で設定
-        bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3 = mylib_stock.calculate_bollingers(adj_clo_prices, movingline_25)
-        
-        # ストキャスティクス
-        FastK, FastD, SlowK, SlowD = mylib_stock.calculate_stochastics(adj_clo_prices)
-        
-        # サイコロジカルライン
-        psychological = mylib_stock.calculate_psychological(adj_clo_prices)
-        
-        # 比率のモメンタム
-        momentum_rate_10 = mylib_stock.calculate_momentum_rate(adj_clo_prices, 10)
-        momentum_rate_20 = mylib_stock.calculate_momentum_rate(adj_clo_prices, 20)
-        
-        # 終値の階差割合
-        close_diff_rate1 = mylib_stock.calculate_close_diff_rate(adj_clo_prices, 1)
-        close_diff_rate5 = mylib_stock.calculate_close_diff_rate(adj_clo_prices, 5)
-        close_diff_rate25 = mylib_stock.calculate_close_diff_rate(adj_clo_prices, 25)
-        
-        # ボラティリティ
-        volatility5 = mylib_stock.calculate_volatility(adj_clo_prices, 5)
-        volatility25 = mylib_stock.calculate_volatility(adj_clo_prices, 25)
-        volatility60 = mylib_stock.calculate_volatility(adj_clo_prices, 60)
-        
-        # 1日リターン{(close/open)-1.0}
-        ret1 = mylib_stock.calculate_return(adj_clo_prices, adj_ope_prices)
-        
-    else:
-        # 26日分作っておけばlist index out of rangeにはならない
-        movingvolume_10, movinglines_5, movinglines_25, macd, signal, rsi_9, rsi_14, rsi_22, psychological, movingline_deviation_5, movingline_deviation_25, bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3, FastK, FastD, SlowK, SlowD, momentum_rate_10, momentum_rate_20, close_diff_rate1, close_diff_rate5, close_diff_rate25, volatility5, volatility25, volatility60, ret1 = [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26
-    
-    # 指標をリストに追加
-    for j, day_price in enumerate(prices_normal[i]):
-        prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j], close_diff_rate1[j], close_diff_rate5[j], close_diff_rate25[j], volatility5[j], volatility25[j], volatility60[j], ret1[j]])
+# pdに対して，取引のルール判断に必要な指標などを計算して追加する
+prices_normal = mylib_stock.calculate_indices(codes_normal, prices_normal)
 
 
 # データ処理が結構重いが，読み込みに1分強かかっていた．
@@ -166,9 +105,9 @@ for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
 
 # Vicugnaのために，書き出しが可能になるようにする(フラグ管理)
 if WRITE:
-    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/プログラミング/AI/Vicugna/etc/prices_normal.job')
+    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal.job')
 if WRITE_SAMPLE:
-    joblib.dump(prices_normal[200:250], '/Users/yuta/Desktop/nnu/プログラミング/AI/Vicugna/etc/prices_normal_sample.job')
+    joblib.dump(prices_normal[200:250], '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_sample.job')
 
 # デバッグ用
 if INTERRUPT:

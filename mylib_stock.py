@@ -2,9 +2,79 @@ import numpy as np
 import pandas as pd
 import bottleneck as bn
 import math
+import tqdm
 
 import sys
 
+
+# 価格のデータを受け取り，テクニカル指標などを追加して返す
+def calculate_indices(codes_normal:list, prices_normal:list) -> list:
+    for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
+    
+        # 調整済み終値
+        adj_clo_prices = [x[15] for x in prices_normal[i]]
+        
+        # 調整済み始値
+        adj_ope_prices = [x[12] for x in prices_normal[i]]
+        
+        # 売買代金(調整されてないっぽい)
+        adj_volume = [x[10] for x in prices_normal[i]]
+        
+        # 出来立てで26日ない時は，0のリストを用意，これがmacdのルールに引っかかることはないはず
+        if len(adj_clo_prices) >= 26:
+            
+            # 売買代金の10日移動平均
+            movingvolume_10 = bn.move_mean(np.array(adj_volume), window=10).tolist()
+            
+            # 移動平均5，25
+            movingline_5 = bn.move_mean(np.array(adj_clo_prices), window=5).tolist()
+            movingline_25 = bn.move_mean(np.array(adj_clo_prices), window=25).tolist()
+            
+            # MACD, シグナル
+            macd, signal = calculate_macds(adj_clo_prices)
+                    
+            # 9, 14, 22日RSI
+            rsi_9 = calculate_rsi(adj_clo_prices, n=9)
+            rsi_14 = calculate_rsi(adj_clo_prices, n=14)
+            rsi_22 = calculate_rsi(adj_clo_prices, n=22)
+            
+            # 移動平均乖離率
+            movingline_deviation_5 = calculate_movingline_deviation(adj_clo_prices, movingline_5)
+            movingline_deviation_25 = calculate_movingline_deviation(adj_clo_prices, movingline_25)
+            
+            # ボリンジャーバンド +1~3, -1~3, *25日移動平均で設定
+            bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3 = calculate_bollingers(adj_clo_prices, movingline_25)
+            
+            # ストキャスティクス
+            FastK, FastD, SlowK, SlowD = calculate_stochastics(adj_clo_prices)
+            
+            # サイコロジカルライン
+            psychological = calculate_psychological(adj_clo_prices)
+            
+            # 比率のモメンタム
+            momentum_rate_10 = calculate_momentum_rate(adj_clo_prices, 10)
+            momentum_rate_20 = calculate_momentum_rate(adj_clo_prices, 20)
+            
+            # 終値の階差割合
+            close_diff_rate1 = calculate_close_diff_rate(adj_clo_prices, 1)
+            close_diff_rate5 = calculate_close_diff_rate(adj_clo_prices, 5)
+            close_diff_rate25 = calculate_close_diff_rate(adj_clo_prices, 25)
+            
+            # ボラティリティ
+            volatility5 = calculate_volatility(adj_clo_prices, 5)
+            volatility25 = calculate_volatility(adj_clo_prices, 25)
+            volatility60 = calculate_volatility(adj_clo_prices, 60)
+            
+            # 1日リターン{(close/open)-1.0}
+            ret1 = calculate_return(adj_clo_prices, adj_ope_prices)
+            
+        else:
+            # 26日分作っておけばlist index out of rangeにはならない
+            movingvolume_10, movingline_5, movingline_25, macd, signal, rsi_9, rsi_14, rsi_22, psychological, movingline_deviation_5, movingline_deviation_25, bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3, FastK, FastD, SlowK, SlowD, momentum_rate_10, momentum_rate_20, close_diff_rate1, close_diff_rate5, close_diff_rate25, volatility5, volatility25, volatility60, ret1 = [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26
+        
+        # 指標をリストに追加
+        for j, day_price in enumerate(prices_normal[i]):
+            prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j], close_diff_rate1[j], close_diff_rate5[j], close_diff_rate25[j], volatility5[j], volatility25[j], volatility60[j], ret1[j]])
 
 # 与えられたリストからRSIを計算
 def calculate_rsi(prices:list, n=14) -> list:
