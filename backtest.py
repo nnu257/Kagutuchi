@@ -89,12 +89,7 @@ prices_normal = [price_normal for i, price_normal in enumerate(prices_normal) if
 
 # データは日付の列以外，全てintかfloatにする
 for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
-    prices_normal[i] = [[change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]
-
-# Vicugnaの運用データ用に，最新30日分を保存しておく
-prices_normal_not_indices_30 = [prices_normal[i][-30:] if len(prices_normal[i])>=30 else prices_normal[i] for i in range(len(prices_normal))]
-joblib.dump(prices_normal_not_indices_30, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_not_indices_30.job')
-    
+    prices_normal[i] = [[change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]   
 
 # pdに対して，取引のルール判断に必要な指標などを計算して追加する
 prices_normal = mylib_stock.calculate_indices(codes_normal, prices_normal)
