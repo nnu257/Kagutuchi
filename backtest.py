@@ -92,7 +92,7 @@ for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
     prices_normal[i] = [[change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]
 
 # Vicugna用に，最新30日分を保存しておく
-prices_normal_not_indices_30 = [prices_normal[i][-30:] if len(prices_normal[i])>=30 else prices_normal[i] for i in range(prices_normal)]
+prices_normal_not_indices_30 = [prices_normal[i][-30:] if len(prices_normal[i])>=30 else prices_normal[i] for i in range(len(prices_normal))]
 joblib.dump(prices_normal_not_indices_30, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_not_indices_30.job')
     
 
