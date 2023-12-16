@@ -84,8 +84,11 @@ for i, code_price in enumerate(prices_normal):
         if "" in day_price:
             st.add(i)
 
-codes_normal = [code_normal for i, code_normal in enumerate(codes_normal) if i not in st]  
+codes_normal = [code_normal for i, code_normal in enumerate(codes_normal) if i not in st]
 prices_normal = [price_normal for i, price_normal in enumerate(prices_normal) if i not in st]
+
+# Vicugnaで利用するため，銘柄コード一覧を保存
+joblib.dump(codes_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/codes_normal.job')
 
 # データは日付の列以外，全てintかfloatにする
 for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
