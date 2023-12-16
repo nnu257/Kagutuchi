@@ -38,8 +38,8 @@ SECURE_PROFIT = 20
 LOSS_CUT = 15
 
 # 書き出しと途中終了のためのフラグ
-WRITE = False
-WRITE_SAMPLE = False
+WRITE = True
+WRITE_SAMPLE = True
 INTERRUPT = True
 
 

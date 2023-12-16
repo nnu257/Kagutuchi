@@ -47,3 +47,4 @@ backtest.pyの変数prices_normal中の添字, 変数名, 値の意味, 例, 単
 44, volatility25, 25日ボラティリティ, 121, -
 45, volatility60, 60日ボラティリティ, 121, -
 46, ret1, 1日リターン(close/open)-1.0(shift1), 0.35, -
+47, ret2, 終値階差比率数列-1.0の1日ラグ, 0.24, -
