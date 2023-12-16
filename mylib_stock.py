@@ -7,6 +7,15 @@ from tqdm import tqdm
 import sys
 
 
+# 型変換のための関数
+def change_type(num:str, k:int):
+    if k == 0 or k== 2:
+        return int(num)
+    elif k != 1:
+        return float(num)
+    else:
+        return num
+
 # 価格のデータを受け取り，テクニカル指標などを追加して返す
 def calculate_indices(codes_normal:list, prices_normal:list) -> list:
     for i, code in enumerate(tqdm(codes_normal, desc="Calculating indices...")):
@@ -75,6 +84,8 @@ def calculate_indices(codes_normal:list, prices_normal:list) -> list:
         # 指標をリストに追加
         for j, day_price in enumerate(prices_normal[i]):
             prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j], close_diff_rate1[j], close_diff_rate5[j], close_diff_rate25[j], volatility5[j], volatility25[j], volatility60[j], ret1[j]])
+            
+    return prices_normal
 
 # 与えられたリストからRSIを計算
 def calculate_rsi(prices:list, n=14) -> list:

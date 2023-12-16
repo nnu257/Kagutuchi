@@ -42,15 +42,6 @@ WRITE = False
 WRITE_SAMPLE = False
 INTERRUPT = True
 
-# 型変換のための関数
-def change_type(num:str, k:int):
-    if k == 0 or k== 2:
-        return int(num)
-    elif k != 1:
-        return float(num)
-    else:
-        return num
-
 
 # データの用意
 # コード一覧，codesは全ての銘柄コード，codes_normalは17業種コードが"その他"以外のもの．つまり，投信を弾いたもの．
@@ -92,7 +83,7 @@ joblib.dump(codes_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/codes_
 
 # データは日付の列以外，全てintかfloatにする
 for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
-    prices_normal[i] = [[change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]   
+    prices_normal[i] = [[mylib_stock.change_type(prices_normal[i][j][k], k) for k in range(17)] for j in range(len(prices_normal[i]))]   
 
 # pdに対して，取引のルール判断に必要な指標などを計算して追加する
 prices_normal = mylib_stock.calculate_indices(codes_normal, prices_normal)
