@@ -49,3 +49,6 @@ backtest.pyの変数prices_normal中の添字, 変数名, 値の意味, 例, 単
 46, ret1, 1日リターン(close/open)-1.0(shift1), 0.35, -
 47, ret2, 終値階差比率数列-1.0の1日ラグ, 0.24, -
 48, days_of_weeks, 曜日, 3, -
+49, sector17, 17業種コード, 16, -
+50, sector33, 33業種コード, 21, -
+51, category, TOPIX500などのカテゴリ, TOPIX mini, -

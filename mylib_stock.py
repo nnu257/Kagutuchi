@@ -8,6 +8,12 @@ import datetime
 import sys
 
 
+# code, 17業種コード, 33業種コード, categoryを組としたリストを作成
+codes_info = open("datas/code/20231008205049.tsv").read().splitlines()[1:]
+codes_info = [code_info.split("\t") for code_info in codes_info]
+codes = [x[2] for x in codes_info]
+sectors = [[x[5], x[7], x[9]] for x in codes_info]
+
 # 型変換のための関数
 def change_type(num:str, k:int):
     if k == 0 or k== 2:
@@ -87,13 +93,19 @@ def calculate_indices(codes_normal:list, prices_normal:list) -> list:
             # 曜日
             days_of_weeks = calculate_day_of_week(days)
             
+            # 17業種コード, 33業種コード
+            sector17, sector33 = calculate_sector_code(code, len(adj_clo_prices))
+            
+            # scalecategory(TOPIXなど)
+            category = calculate_category(code, len(adj_clo_prices))
+            
         else:
             # 26日分作っておけばlist index out of rangeにはならない
-            movingvolume_10, movingline_5, movingline_25, macd, signal, rsi_9, rsi_14, rsi_22, psychological, movingline_deviation_5, movingline_deviation_25, bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3, FastK, FastD, SlowK, SlowD, momentum_rate_10, momentum_rate_20, close_diff_rate1, close_diff_rate5, close_diff_rate25, volatility5, volatility25, volatility60, ret1, ret2, days_of_weeks = [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26
+            movingvolume_10, movingline_5, movingline_25, macd, signal, rsi_9, rsi_14, rsi_22, psychological, movingline_deviation_5, movingline_deviation_25, bollinger25_p1, bollinger25_p2, bollinger25_p3, bollinger25_m1, bollinger25_m2, bollinger25_m3, FastK, FastD, SlowK, SlowD, momentum_rate_10, momentum_rate_20, close_diff_rate1, close_diff_rate5, close_diff_rate25, volatility5, volatility25, volatility60, ret1, ret2, days_of_weeks, sector17, sector33, category = [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26, [0]*26
         
         # 指標をリストに追加
         for j, day_price in enumerate(prices_normal[i]):
-            prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j], close_diff_rate1[j], close_diff_rate5[j], close_diff_rate25[j], volatility5[j], volatility25[j], volatility60[j], ret1[j], ret2[j], days_of_weeks[j]])
+            prices_normal[i][j].extend([movingvolume_10[j], movingline_5[j], movingline_25[j], macd[j], signal[j], rsi_9[j], rsi_14[j], rsi_22[j], psychological[j],movingline_deviation_5[j], movingline_deviation_25[j], bollinger25_p1[j], bollinger25_p2[j], bollinger25_p3[j], bollinger25_m1[j], bollinger25_m2[j], bollinger25_m3[j], FastK[j], FastD[j], SlowK[j], SlowD[j], momentum_rate_10[j], momentum_rate_20[j], close_diff_rate1[j], close_diff_rate5[j], close_diff_rate25[j], volatility5[j], volatility25[j], volatility60[j], ret1[j], ret2[j], days_of_weeks[j], sector17[j], sector33[j], category[j]])
         
     return prices_normal
 
@@ -300,3 +312,20 @@ def calculate_day_of_week(days:list) -> list:
     
     days_of_week = [datetime.datetime.strptime(day, "%Y-%m-%d").weekday() for day in days]
     return days_of_week
+
+# 与えられた銘柄コードと数値から，17業種コードと33業種コードを計算
+def calculate_sector_code(code:int, n:int) -> list:
+    
+    code = str(code)
+    sector17 = sectors[codes.index(code)][0]
+    sector33 = sectors[codes.index(code)][1]
+    
+    return [sector17]*n, [sector33]*n
+
+# 与えられた銘柄コードと数値から，scalecategoryを計算
+def calculate_category(code:int, n:int) -> list:
+    
+    code = str(code)
+    category = sectors[codes.index(code)][2]
+    
+    return [category]*n
