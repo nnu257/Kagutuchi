@@ -1,0 +1,2 @@
+2023/10/08_20:50:49 記録
+Counter({'-': 2129, 'TOPIX Small 2': 1163, 'TOPIX Small 1': 495, 'TOPIX Mid400': 398, 'TOPIX Large70': 70, 'TOPIX Core30': 30})
