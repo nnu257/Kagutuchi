@@ -38,9 +38,10 @@ SECURE_PROFIT = 20
 LOSS_CUT = 15
 
 # 書き出しと途中終了のためのフラグ
-WRITE = True
-WRITE_SAMPLE = True
-INTERRUPT = True
+WRITE = False
+WRITE_SAMPLE = False
+INTERRUPT1 = True
+INTERRUPT2 = True
 
 
 # データの用意
@@ -50,6 +51,7 @@ codes_info = open(DATA_PATH_CODE, "r").read().splitlines()[1:]
 codes_info = [code_info.split("\t") for code_info in codes_info]
 codes = [int(code_info[2]) for code_info in codes_info]
 codes_normal = [int(code_info[2]) for code_info in codes_info if code_info[6] != 'その他']
+codes_info_normal = [code_info for code_info in codes_info if code_info[6] != 'その他']
 
 # 株価データは投信以外のデータを読み込む
 # pricesの構造は，3次元リスト．[[日付，銘柄コード，4本値]のリスト=ある銘柄の2年のデータ]のリスト=全銘柄の2年のデータ
@@ -68,7 +70,7 @@ for i, code_price in enumerate(prices_normal):
 
 
 # それでも''が存在する場合，連続した2日以上取引がされていないことになる．
-# そういった銘柄は取引には適さないので，codes_normalとprices_normalから削除する．
+# そういった銘柄は取引には適さないので，codes_normalとprices_normal, codes_info_normalから削除する．
 st = set()
 for i, code_price in enumerate(prices_normal):
     for day_price in code_price:
@@ -77,9 +79,17 @@ for i, code_price in enumerate(prices_normal):
 
 codes_normal = [code_normal for i, code_normal in enumerate(codes_normal) if i not in st]
 prices_normal = [price_normal for i, price_normal in enumerate(prices_normal) if i not in st]
+codes_info_normal = [code_info for i, code_info in enumerate(codes_info_normal) if i not in st]
+
+codes_normal_prime = [code for i, code in enumerate(codes_normal) if codes_info_normal[i][11] == 'プライム']
 
 # Vicugnaで利用するため，銘柄コード一覧を保存
 joblib.dump(codes_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/codes_normal.job')
+joblib.dump(codes_normal_prime, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/codes_normal_prime.job')
+
+# デバッグ用
+if INTERRUPT1:
+    sys.exit()
 
 # データは日付の列以外，全てintかfloatにする
 for i in tqdm(range(len(prices_normal)), desc="Changing type..."):
@@ -99,7 +109,7 @@ if WRITE_SAMPLE:
     joblib.dump(prices_normal[200:250], '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_sample.job')
 
 # デバッグ用
-if INTERRUPT:
+if INTERRUPT2:
     sys.exit()
 
 
@@ -152,11 +162,11 @@ def decide_buy_code(today:datetime.date) -> list:
                         judge_buy = True
                         
                 # (2)さらに，株価が移動平均線25日の上から漸近した = 移動平均乖離率25(record[27])の下降が2%~20%，当日が0~20%
-                deviation_down = dbyesterday_record[27] - yesterday_record[27]
-                deviation_yesterday = yesterday_record[27]
-                if deviation_yesterday >= 3 and deviation_yesterday < 20 and deviation_down > 2 and deviation_down < 7:
+                #deviation_down = dbyesterday_record[27] - yesterday_record[27]
+                #deviation_yesterday = yesterday_record[27]
+                #if deviation_yesterday >= 3 and deviation_yesterday < 20 and deviation_down > 2 and deviation_down < 7:
                     #judge_buy = True
-                    pass
+                #    pass
                         
         if judge_buy:                
             trade_buy_candidates.append([today_record[1], today_record[2], today_record[3], today_record[17]])
