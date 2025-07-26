@@ -40,8 +40,8 @@ LOSS_CUT = 15
 # 書き出しと途中終了のためのフラグ
 WRITE = False
 WRITE_SAMPLE = False
-INTERRUPT1 = True
-INTERRUPT2 = True
+INTERRUPT1 = False
+INTERRUPT2 = False
 
 
 # データの用意
@@ -84,8 +84,8 @@ codes_info_normal = [code_info for i, code_info in enumerate(codes_info_normal) 
 codes_normal_prime = [code for i, code in enumerate(codes_normal) if codes_info_normal[i][11] == 'プライム']
 
 # Vicugnaで利用するため，銘柄コード一覧を保存
-joblib.dump(codes_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/codes_normal.job')
-joblib.dump(codes_normal_prime, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/codes_normal_prime.job')
+joblib.dump(codes_normal, '/Users/yuta/Desktop/nnu/program/AI・株/Vicugna/etc/codes_normal.job')
+joblib.dump(codes_normal_prime, '/Users/yuta/Desktop/nnu/program/AI・株/Vicugna/etc/codes_normal_prime.job')
 
 # デバッグ用
 if INTERRUPT1:
@@ -104,9 +104,9 @@ prices_normal = mylib_stock.calculate_indices(codes_normal, prices_normal)
 
 # Vicugnaの学習用データのために，書き出しが可能になるようにする(フラグ管理)
 if WRITE:
-    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal.job')
+    joblib.dump(prices_normal, '/Users/yuta/Desktop/nnu/program/AI・株/Vicugna/etc/prices_normal.job')
 if WRITE_SAMPLE:
-    joblib.dump(prices_normal[200:250], '/Users/yuta/Desktop/nnu/program/AI/Vicugna/etc/prices_normal_sample.job')
+    joblib.dump(prices_normal[200:250], '/Users/yuta/Desktop/nnu/program/AI・株/Vicugna/etc/prices_normal_sample.job')
 
 # デバッグ用
 if INTERRUPT2:
